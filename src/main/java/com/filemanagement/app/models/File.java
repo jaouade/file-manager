@@ -19,6 +19,27 @@ public class File {
     private boolean archived;
     private String unzipPath;
 
+    public String getModifiedAt() {
+        return modifiedAt;
+    }
+
+    public File setModifiedAt(String modifiedAt) {
+        this.modifiedAt = modifiedAt;
+        return this;
+    }
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public File setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
+        return this;
+    }
+
+    private String modifiedAt;
+    private String createdAt;
+
 
     public File(boolean archived,String unzipPath,String editPath,String name, String path, String deletePath, String renamePath) {
         this.name = name;

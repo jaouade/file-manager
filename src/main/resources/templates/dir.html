@@ -57,9 +57,12 @@
         <td><a th:href="@{${dir.path}}">
             <th:block th:text="${dir.name}"/>
         </a></td>
+        <td class="text-success">
+            <th:block th:text="${dir.modifiedAt}"/>
+        </td>
         <td>
             <form th:action="@{${dir.renamePath}}" th:method="post">
-                <div class="input-group mb-3 col-5">
+                <div class="input-group mb-3 ">
                     <input type="text" class="form-control" th:value="${dir.name}"  name="name" placeholder="new name">
                     <div class="input-group-append">
                         <button class="btn btn-outline-secondary" type="submit" >Save</button>
@@ -81,9 +84,12 @@
         <td>
             <th:block th:text="${file.name}"/>
         </td>
+        <td class="text-success">
+            <th:block th:text="${file.modifiedAt}"/>
+        </td>
         <td>
             <form th:action="@{${file.renamePath}}" th:method="post">
-            <div class="input-group mb-3 col-5">
+            <div class="input-group mb-3">
                 <input type="text" class="form-control" th:value="${file.name}"  name="name" placeholder="new name">
                 <div class="input-group-append">
                     <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Save</button>

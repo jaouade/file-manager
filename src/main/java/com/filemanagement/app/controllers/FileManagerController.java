@@ -2,6 +2,7 @@ package com.filemanagement.app.controllers;
 
 import com.filemanagement.app.models.Directory;
 import com.filemanagement.app.utils.Constants;
+import com.filemanagement.app.utils.DateUtils;
 import com.filemanagement.app.utils.ErrorHandler;
 import com.filemanagement.app.utils.ZipUtils;
 import org.apache.commons.io.FileUtils;
@@ -73,6 +74,7 @@ public class FileManagerController {
         try {
             model.addAttribute("savePath","/edit/file/?path="+URLEncoder.encode(decodedPath,StandardCharsets.UTF_8.toString()));
             model.addAttribute("name",file.getName());
+            model.addAttribute("backPath","/open/dir/?path=" + URLEncoder.encode(URLDecoder.decode(file.getParent(), StandardCharsets.UTF_8.toString()), StandardCharsets.UTF_8.toString()));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -241,7 +243,12 @@ public class FileManagerController {
 
                     Function<File, Directory> fileDirectoryMapper = file -> {
                         try {
-                            return new Directory("/zip/dir/?path="+ encodePath(file),"/rename/dir/?path=" + encodePath(file), "/open/dir/?path=" + encodePath(file), "/delete/dir/?path=" + encodePath(file), file.getName());
+                            return new Directory("/zip/dir/?path="+ encodePath(file)
+                                    ,"/rename/dir/?path=" + encodePath(file)
+                                    , "/open/dir/?path=" + encodePath(file)
+                                    , "/delete/dir/?path=" + encodePath(file)
+                                    , file.getName()
+                            ).setModifiedAt(DateUtils.getFormattedDate(file.lastModified()));
                         } catch (UnsupportedEncodingException e) {
                             e.printStackTrace();
                         }
@@ -249,7 +256,13 @@ public class FileManagerController {
                     };
                     Function<File, com.filemanagement.app.models.File> fileFileMapper = file -> {
                         try {
-                            return new com.filemanagement.app.models.File(FilenameUtils.getExtension(file.getName()).equals("zip"),"/unzip/file/?path=" + encodePath(file),"/edit/file/?path=" + encodePath(file),file.getName(), "/open/dir/?path=" + encodePath(file), "/delete/dir/?path=" + encodePath(file), "/rename/file/?path=" + encodePath(file));
+                            return new com.filemanagement.app.models.File(
+                                    FilenameUtils.getExtension(file.getName()).equals("zip"),
+                                    "/unzip/file/?path=" + encodePath(file),
+                                    "/edit/file/?path=" + encodePath(file),file.getName(),
+                                    "/open/dir/?path=" + encodePath(file),
+                                    "/delete/dir/?path=" + encodePath(file),
+                                    "/rename/file/?path=" + encodePath(file)).setModifiedAt(DateUtils.getFormattedDate(file.lastModified()));
                         } catch (UnsupportedEncodingException e) {
                             e.printStackTrace();
                         }
@@ -291,10 +304,11 @@ public class FileManagerController {
     private List<Directory> breadCrumbThis(File directory) throws UnsupportedEncodingException {
         File currentDir = directory;
         List<Directory> breadCrumb = new ArrayList<>();
+
         while (currentDir != null) {
             breadCrumb.add(new Directory("/zip/dir/?path="+ encodePath(currentDir),"", "/open/dir/?path=" + encodePath(currentDir)
                     , "/delete/dir/?path=" + encodePath(currentDir)
-                    , currentDir.getName().isEmpty() ? "root" : currentDir.getName()));
+                    , currentDir.getName().isEmpty() ? "root" : currentDir.getName()).setModifiedAt(DateUtils.getFormattedDate(currentDir.lastModified())));
             currentDir = currentDir.getParentFile();
         }
         Collections.reverse(breadCrumb);

@@ -11,6 +11,25 @@ public class Directory {
     private String renamePath;
     private String zipPath;
     private String name;
+
+    public String getModifiedAt() {
+        return modifiedAt;
+    }
+
+    public Directory setModifiedAt(String modifiedAt) {
+        this.modifiedAt = modifiedAt;
+        return this;
+    }
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public Directory setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
+        return this;
+    }
+
     private String modifiedAt;
     private String createdAt;
 
