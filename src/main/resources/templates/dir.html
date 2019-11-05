@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css"
+          integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+            integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+            integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+            crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+            integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+            crossorigin="anonymous"></script>
+</head>
+<body class="container">
+<div style="margin-top: 30px">
+    <div class="row">
+        <div class="col-9">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li th:each="dir , iterStat : ${breadcrumb}" class="breadcrumb-item"
+                        th:classappend="${iterStat.index == iterStat.size-1} ? 'active' : ''">
+                        <a th:if="${iterStat.index != iterStat.size-1}" th:href="@{${dir.path}}">
+                            <th:block th:text="${dir.name}"/>
+                        </a>
+                        <th:block th:if="${iterStat.index == iterStat.size-1}" th:text="${dir.name}"/>
+                    </li>
+                </ol>
+
+            </nav>
+        </div>
+        <div class="col-3">
+            <button data-toggle="modal" data-target="#exampleModal" class="btn btn-success" ><i class="fas fa-file-upload"></i></button>
+            <button data-toggle="modal" data-target="#createModal" class="btn btn-warning" ><i class="fas fa-folder-plus"></i></button>
+            <button data-toggle="modal" data-target="#createFile" class="btn btn-info" ><i class="fas fa-file-medical"></i></button>
+            <a th:href="@{${deletePath}}"  class="btn btn-danger" style="float: right"><i class="fas fa-trash"></i></a>
+
+        </div>
+    </div>
+</div>
+<div th:if="${error != null}" id="root" class="alert alert-danger">
+    <th:block th:text="${error}"/>
+</div>
+<table style="margin-top: 50px" class="table table-hover">
+    <thead>
+    </thead>
+    <tbody>
+    <tr th:each="dir :${dirs}">
+
+        <th scope="row"><i class="fas fa-folder-open"></i></th>
+
+        <td><a th:href="@{${dir.path}}">
+            <th:block th:text="${dir.name}"/>
+        </a></td>
+        <td>
+            <form th:action="@{${dir.renamePath}}" th:method="post">
+                <div class="input-group mb-3 col-5">
+                    <input type="text" class="form-control" th:value="${dir.name}"  name="name" placeholder="new name">
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary" type="submit" >Save</button>
+                    </div>
+                </div>
+            </form>
+
+        </td>
+        <td>
+            <a th:href="@{${dir.path}}" class="btn btn-primary">Go to</a>
+            <a th:href="@{${dir.deletePath}}" class="btn btn-danger">Delete</a>
+        </td>
+    </tr>
+    <tr th:each="file :${files}">
+
+        <th scope="row"><i class="far fa-file"></i></th>
+
+        <td>
+            <th:block th:text="${file.name}"/>
+        </td>
+        <td>
+            <form th:action="@{${file.renamePath}}" th:method="post">
+            <div class="input-group mb-3 col-5">
+                <input type="text" class="form-control" th:value="${file.name}"  name="name" placeholder="new name">
+                <div class="input-group-append">
+                    <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Save</button>
+                </div>
+            </div>
+            </form>
+
+        </td>
+        <td>
+            <a th:href="@{${file.deletePath}}" class="btn btn-danger">Delete</a>
+        </td>
+    </tr>
+
+
+    </tbody>
+</table>
+
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Upload file</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form th:action="@{${uploadPath}}" method="post" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <input name="file" type="file" placeholder="file to be uploaded"/>
+                </div>
+                <div class="modal-footer">
+                    <button type="reset" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Upload</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="createModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="create">Create Dir</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form th:action="@{${createPath}}" method="post" >
+                <div class="modal-body">
+                    <input class="form-control" name="dirName" type="text" placeholder="Dir to be created"/>
+                </div>
+                <div class="modal-footer">
+                    <button type="reset" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Dir</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div><div class="modal fade" id="createFile" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createF">Create File</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form th:action="@{${createFilePath}}" method="post" >
+                <div class="modal-body">
+                    <input class="form-control" name="fileName" type="text" placeholder="File to be created"/>
+                </div>
+                <div class="modal-footer">
+                    <button type="reset" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create New File</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

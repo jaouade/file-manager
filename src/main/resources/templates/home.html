@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+<body class="container">
+<form th:object="${directory}" th:action="@{/directory}" method="post" >
+
+    <div class="form-group">
+        <label for="path">Root dir</label>
+        <input th:field="*{path}" type="text" class="form-control" name="path" id="path" aria-describedby="root" placeholder="Enter root dir">
+        <small th:if="${error != null}" id="root" class="form-text text-muted">
+            <span class="text-danger"><th:block th:text="${error}"/></span>
+        </small>
+    </div>
+    <button type="submit" class="btn btn-success">Browse</button>
+
+</form>
+</body>
+</html>
