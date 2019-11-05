@@ -69,7 +69,8 @@
 
         </td>
         <td>
-            <a th:href="@{${dir.path}}" class="btn btn-primary">Go to</a>
+            <a th:href="@{${dir.path}}" class="btn btn-primary">Open</a>
+            <a th:href="@{${dir.zipPath}}" class="btn btn-info">Zip Dir</a>
             <a th:href="@{${dir.deletePath}}" class="btn btn-danger">Delete</a>
         </td>
     </tr>
@@ -92,6 +93,8 @@
 
         </td>
         <td>
+            <a th:if="${!file.archived}" th:href="@{${file.editPath}}" class="btn btn-warning">Edit Content</a>
+            <a th:if="${file.archived}" th:href="@{${file.unzipPath}}" class="btn btn-warning">Unzip</a>
             <a th:href="@{${file.deletePath}}" class="btn btn-danger">Delete</a>
         </td>
     </tr>

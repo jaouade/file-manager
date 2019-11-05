@@ -1,17 +1,21 @@
 package com.filemanagement.app.controllers;
 
 import com.filemanagement.app.models.Directory;
+import com.filemanagement.app.utils.Constants;
 import com.filemanagement.app.utils.ErrorHandler;
+import com.filemanagement.app.utils.ZipUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -22,111 +26,166 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.filemanagement.app.utils.Constants.SLASH;
 import static java.net.URLEncoder.encode;
 
 @Controller
 
 public class FileManagerController {
+
+    @PostMapping("edit/file/")
+    public String saveEdit(@ModelAttribute com.filemanagement.app.models.File file, @RequestParam String path) throws UnsupportedEncodingException {
+        File fileToSave = new File(URLDecoder.decode(path, StandardCharsets.UTF_8.toString()));
+
+        try {
+            FileUtils.writeStringToFile(
+                    fileToSave,
+                    file.getContent(),false);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "redirect:/open/dir/?path=" + URLEncoder.encode(URLDecoder.decode(fileToSave.getParent(), StandardCharsets.UTF_8.toString()), StandardCharsets.UTF_8.toString());
+    }
+    @GetMapping("unzip/file/")
+    public String unzip(@RequestParam String path) throws IOException {
+        String decodedPath = decodePath(path);
+        File file = new File(decodedPath);
+        ZipUtils.extractArchive(new File(file.getParent()+SLASH+FilenameUtils.getBaseName(file.getName())),file);
+        return "redirect:/open/dir/?path=" + URLEncoder.encode(URLDecoder.decode(file.getParent(), StandardCharsets.UTF_8.toString()), StandardCharsets.UTF_8.toString());
+    }
+
+    private String decodePath(@RequestParam String path) throws UnsupportedEncodingException {
+        return URLDecoder.decode(path, StandardCharsets.UTF_8.toString());
+    }
+
+    @GetMapping("zip/dir/")
+    public String zip(@RequestParam String path) throws IOException {
+        String decodedPath = decodePath(path);
+        File file = new File(decodedPath);
+        ZipUtils.compressDirectory(file,new File(file.getParent()+ SLASH +FilenameUtils.getBaseName(file.getName())+".zip"));
+        return "redirect:/open/dir/?path=" + URLEncoder.encode(URLDecoder.decode(file.getParent(), StandardCharsets.UTF_8.toString()), StandardCharsets.UTF_8.toString());
+    }
+    @GetMapping("edit/file/")
+    public String edit(Model model, @RequestParam String path) throws IOException {
+        String decodedPath = decodePath(path);
+        File file = new File(decodedPath);
+        model.addAttribute("file", com.filemanagement.app.models.File.builder().content(FileUtils.readFileToString(file)).build());
+        try {
+            model.addAttribute("savePath","/edit/file/?path="+URLEncoder.encode(decodedPath,StandardCharsets.UTF_8.toString()));
+            model.addAttribute("name",file.getName());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return  "edit";
+    }
     @PostMapping("upload/file/")
     public String upload(RedirectAttributes redirectAttributes, @RequestParam("file") MultipartFile file, @RequestParam String path) throws UnsupportedEncodingException {
-        if (file==null || file.isEmpty()) {
+        if (file == null || file.isEmpty()) {
             redirectAttributes.addFlashAttribute("error", "Invalid uploaded file");
-            return "redirect:/open/dir/?path="+URLEncoder.encode(URLDecoder.decode(path,StandardCharsets.UTF_8.toString()), StandardCharsets.UTF_8.toString());
+            return "redirect:/open/dir/?path=" + URLEncoder.encode(URLDecoder.decode(path, StandardCharsets.UTF_8.toString()), StandardCharsets.UTF_8.toString());
 
         }
         String decodedPath;
         try {
 
             decodedPath = URLDecoder.decode(path, StandardCharsets.UTF_8.toString());
-            file.transferTo(new File(decodedPath+"/"+file.getOriginalFilename()));
+            file.transferTo(new File(decodedPath + SLASH + file.getOriginalFilename()));
         } catch (IOException e) {
             redirectAttributes.addFlashAttribute("error", "We could'nt upload file " + file.getName());
         }
-        return "redirect:/open/dir/?path="+URLEncoder.encode(path, StandardCharsets.UTF_8.toString());
+        return "redirect:/open/dir/?path=" + URLEncoder.encode(path, StandardCharsets.UTF_8.toString());
 
     }
+
     @PostMapping("create/dir/")
-    public String create(RedirectAttributes redirectAttributes, @RequestParam String path,@RequestParam String dirName) throws UnsupportedEncodingException {
-        if (dirName==null || dirName.isEmpty()) {
+    public String create(RedirectAttributes redirectAttributes, @RequestParam String path, @RequestParam String dirName) throws UnsupportedEncodingException {
+        if (dirName == null || dirName.isEmpty()) {
             redirectAttributes.addFlashAttribute("error", "invalid dir name : " + dirName);
-            return "redirect:/open/dir/?path="+URLEncoder.encode(URLDecoder.decode(path,StandardCharsets.UTF_8.toString()), StandardCharsets.UTF_8.toString());
+            return "redirect:/open/dir/?path=" + URLEncoder.encode(URLDecoder.decode(path, StandardCharsets.UTF_8.toString()), StandardCharsets.UTF_8.toString());
 
         }
         String decodedPath;
         try {
 
             decodedPath = URLDecoder.decode(path, StandardCharsets.UTF_8.toString());
-            File file = new File(decodedPath + "/" + dirName);
+            File file = new File(decodedPath + SLASH + dirName);
             file.mkdirs();
         } catch (IOException e) {
             redirectAttributes.addFlashAttribute("error", "We could'nt create dir " + dirName);
         }
-        return "redirect:/open/dir/?path="+URLEncoder.encode(path+"/"+dirName, StandardCharsets.UTF_8.toString());
+        return "redirect:/open/dir/?path=" + URLEncoder.encode(path + SLASH + dirName, StandardCharsets.UTF_8.toString());
 
     }
+
     @PostMapping("create/file/")
-    public String createFile(RedirectAttributes redirectAttributes, @RequestParam String path,@RequestParam String fileName) throws UnsupportedEncodingException {
-        if (fileName==null || fileName.isEmpty()) {
+    public String createFile(RedirectAttributes redirectAttributes, @RequestParam String path, @RequestParam String fileName) throws UnsupportedEncodingException {
+        if (fileName == null || fileName.isEmpty()) {
             redirectAttributes.addFlashAttribute("error", "invalid file name : " + fileName);
-            return "redirect:/open/dir/?path="+URLEncoder.encode(URLDecoder.decode(path,StandardCharsets.UTF_8.toString()), StandardCharsets.UTF_8.toString());
+            return "redirect:/open/dir/?path=" + URLEncoder.encode(URLDecoder.decode(path, StandardCharsets.UTF_8.toString()), StandardCharsets.UTF_8.toString());
 
         }
         String decodedPath;
         try {
 
             decodedPath = URLDecoder.decode(path, StandardCharsets.UTF_8.toString());
-            File file = new File(decodedPath + "/" + fileName);
+            File file = new File(decodedPath + SLASH + fileName);
             file.createNewFile();
         } catch (IOException e) {
             redirectAttributes.addFlashAttribute("error", "We could'nt create file " + fileName);
         }
-        return "redirect:/open/dir/?path="+URLEncoder.encode(path, StandardCharsets.UTF_8.toString());
+        return "redirect:/open/dir/?path=" + URLEncoder.encode(path, StandardCharsets.UTF_8.toString());
 
     }
+
     @PostMapping("rename/file/")
-    public String renameFile(RedirectAttributes redirectAttributes, @RequestParam String path,@RequestParam String name) throws UnsupportedEncodingException {
+    public String renameFile(RedirectAttributes redirectAttributes, @RequestParam String path, @RequestParam String name) throws UnsupportedEncodingException {
         String decodedPath;
         decodedPath = URLDecoder.decode(path, StandardCharsets.UTF_8.toString());
         File file = new File(decodedPath);
-        if (name==null || name.isEmpty()) {
+        if (name == null || name.isEmpty()) {
             redirectAttributes.addFlashAttribute("error", "invalid file name : " + name);
-            return "redirect:/open/dir/?path="+URLEncoder.encode(file.getParent(), StandardCharsets.UTF_8.toString());
+            return "redirect:/open/dir/?path=" + URLEncoder.encode(file.getParent(), StandardCharsets.UTF_8.toString());
 
         }
 
         try {
             FileUtils.moveFile(
                     FileUtils.getFile(decodedPath),
-                    FileUtils.getFile(file.getParent()+"/"+name));
+                    FileUtils.getFile(file.getParent() + SLASH + name));
         } catch (IOException e) {
             redirectAttributes.addFlashAttribute("error", "We could'nt change file name to " + name);
         }
-        return "redirect:/open/dir/?path="+URLEncoder.encode(file.getParent(), StandardCharsets.UTF_8.toString());
+        return "redirect:/open/dir/?path=" + URLEncoder.encode(file.getParent(), StandardCharsets.UTF_8.toString());
 
     }
+
     @PostMapping("rename/dir/")
-    public String renameDir(RedirectAttributes redirectAttributes, @RequestParam String path,@RequestParam String name) throws UnsupportedEncodingException {
+    public String renameDir(RedirectAttributes redirectAttributes, @RequestParam String path, @RequestParam String name) throws UnsupportedEncodingException {
         String decodedPath;
         decodedPath = URLDecoder.decode(path, StandardCharsets.UTF_8.toString());
         File file = new File(decodedPath);
-        if (name==null || name.isEmpty()) {
+        if (name == null || name.isEmpty()) {
             redirectAttributes.addFlashAttribute("error", "invalid dir name : " + name);
-            return "redirect:/open/dir/?path="+URLEncoder.encode(file.getParent(), StandardCharsets.UTF_8.toString());
+            return "redirect:/open/dir/?path=" + URLEncoder.encode(file.getParent(), StandardCharsets.UTF_8.toString());
 
         }
 
         try {
             FileUtils.moveDirectory(
                     FileUtils.getFile(decodedPath),
-                    FileUtils.getFile(file.getParent()+"/"+name));
+                    FileUtils.getFile(file.getParent() + SLASH + name));
         } catch (IOException e) {
             redirectAttributes.addFlashAttribute("error", "We could'nt change dir name to " + name);
         }
-        return "redirect:/open/dir/?path="+URLEncoder.encode(file.getParent(), StandardCharsets.UTF_8.toString());
+        return "redirect:/open/dir/?path=" + URLEncoder.encode(file.getParent(), StandardCharsets.UTF_8.toString());
 
     }
 
-    @GetMapping("delete/dir/")
+    public static String makeUrl(HttpServletRequest request) {
+        return request.getRequestURL().toString() + "?" + request.getQueryString();
+    }
+
+    @GetMapping("/confirmed/delete/dir/")
     public String delete(RedirectAttributes redirectAttributes, @RequestParam String path) {
 
         String decodedPath;
@@ -138,18 +197,18 @@ public class FileManagerController {
                 if (directory.isDirectory()) {
                     try {
                         FileUtils.deleteDirectory(directory);
-                        return "redirect:/open/dir/?path=" + encode(parent.getAbsolutePath(), StandardCharsets.UTF_8.toString());
+                        return "redirect:/open/dir/?path=" + encodePath(parent);
                     } catch (IOException ex) {
                         redirectAttributes.addFlashAttribute("error", "We could'nt delete folder " + directory.getName());
-                        return "redirect:/open/dir/?path=" + encode(directory.getAbsolutePath(), StandardCharsets.UTF_8.toString());
+                        return "redirect:/open/dir/?path=" + encodePath(directory);
 
                     }
-                }else {
+                } else {
                     if (directory.delete())
-                        return "redirect:/open/dir/?path=" + encode(parent.getAbsolutePath(), StandardCharsets.UTF_8.toString());
+                        return "redirect:/open/dir/?path=" + encodePath(parent);
                     else {
                         redirectAttributes.addFlashAttribute("error", "We could'nt delete folder " + directory.getName());
-                        return "redirect:/open/dir/?path=" + encode(directory.getAbsolutePath(), StandardCharsets.UTF_8.toString());
+                        return "redirect:/open/dir/?path=" + encodePath(directory);
 
                     }
                 }
@@ -160,10 +219,21 @@ public class FileManagerController {
 
     }
 
+    @GetMapping("delete/dir/")
+    public String delete(Model model, @RequestParam String path, HttpServletRequest request) {
+        try {
+            model.addAttribute("next", "/confirmed/delete/dir/?path=" + URLEncoder.encode(path, StandardCharsets.UTF_8.toString()));
+            model.addAttribute("previous", request.getHeader("referer"));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return "confirm";
+    }
+
     @GetMapping("open/dir/")
     public String open(Model model, RedirectAttributes redirectAttributes, @RequestParam String path) {
         try {
-            String decodedPath = URLDecoder.decode(path, StandardCharsets.UTF_8.toString());
+            String decodedPath = decodePath(path);
             File directory = new File(decodedPath);
             if (directory.exists()) {
 
@@ -171,7 +241,7 @@ public class FileManagerController {
 
                     Function<File, Directory> fileDirectoryMapper = file -> {
                         try {
-                            return new Directory("/rename/dir/?path=" + encode(file.getAbsolutePath(), StandardCharsets.UTF_8.toString()),"/open/dir/?path=" + encode(file.getAbsolutePath(), StandardCharsets.UTF_8.toString()), "/delete/dir/?path=" + encode(file.getAbsolutePath(), StandardCharsets.UTF_8.toString()), file.getName());
+                            return new Directory("/zip/dir/?path="+ encodePath(file),"/rename/dir/?path=" + encodePath(file), "/open/dir/?path=" + encodePath(file), "/delete/dir/?path=" + encodePath(file), file.getName());
                         } catch (UnsupportedEncodingException e) {
                             e.printStackTrace();
                         }
@@ -179,7 +249,7 @@ public class FileManagerController {
                     };
                     Function<File, com.filemanagement.app.models.File> fileFileMapper = file -> {
                         try {
-                            return new com.filemanagement.app.models.File(file.getName(),"/open/dir/?path=" + encode(file.getAbsolutePath(), StandardCharsets.UTF_8.toString()), "/delete/dir/?path=" + encode(file.getAbsolutePath(), StandardCharsets.UTF_8.toString()),"/rename/file/?path=" + encode(file.getAbsolutePath(), StandardCharsets.UTF_8.toString()));
+                            return new com.filemanagement.app.models.File(FilenameUtils.getExtension(file.getName()).equals("zip"),"/unzip/file/?path=" + encodePath(file),"/edit/file/?path=" + encodePath(file),file.getName(), "/open/dir/?path=" + encodePath(file), "/delete/dir/?path=" + encodePath(file), "/rename/file/?path=" + encodePath(file));
                         } catch (UnsupportedEncodingException e) {
                             e.printStackTrace();
                         }
@@ -193,10 +263,10 @@ public class FileManagerController {
                             .map(fileFileMapper).collect(Collectors.toList());
                     model.addAttribute("dirs", directories.size() > 0 ? directories : null);
                     model.addAttribute("files", files.size() > 0 ? files : null);
-                    model.addAttribute("deletePath", "/delete/dir/?path=" + encode(directory.getAbsolutePath(), StandardCharsets.UTF_8.toString()));
-                    model.addAttribute("uploadPath", "/upload/file/?path=" + encode(directory.getAbsolutePath(), StandardCharsets.UTF_8.toString()));
-                    model.addAttribute("createPath", "/create/dir/?path=" + encode(directory.getAbsolutePath(), StandardCharsets.UTF_8.toString()));
-                    model.addAttribute("createFilePath", "/create/file/?path=" + encode(directory.getAbsolutePath(), StandardCharsets.UTF_8.toString()));
+                    model.addAttribute("deletePath", "/delete/dir/?path=" + encodePath(directory));
+                    model.addAttribute("uploadPath", "/upload/file/?path=" + encodePath(directory));
+                    model.addAttribute("createPath", "/create/dir/?path=" + encodePath(directory));
+                    model.addAttribute("createFilePath", "/create/file/?path=" + encodePath(directory));
                     model.addAttribute("breadcrumb", breadCrumbThis(directory));
                     return "dir";
 
@@ -214,12 +284,16 @@ public class FileManagerController {
 
     }
 
+    private String encodePath(File file) throws UnsupportedEncodingException {
+        return encode(file.getAbsolutePath(), StandardCharsets.UTF_8.toString());
+    }
+
     private List<Directory> breadCrumbThis(File directory) throws UnsupportedEncodingException {
         File currentDir = directory;
         List<Directory> breadCrumb = new ArrayList<>();
         while (currentDir != null) {
-            breadCrumb.add(new Directory("","/open/dir/?path=" + encode(currentDir.getAbsolutePath(), StandardCharsets.UTF_8.toString())
-                    , "/delete/dir/?path=" + encode(currentDir.getAbsolutePath(), StandardCharsets.UTF_8.toString())
+            breadCrumb.add(new Directory("/zip/dir/?path="+ encodePath(currentDir),"", "/open/dir/?path=" + encodePath(currentDir)
+                    , "/delete/dir/?path=" + encodePath(currentDir)
                     , currentDir.getName().isEmpty() ? "root" : currentDir.getName()));
             currentDir = currentDir.getParentFile();
         }
