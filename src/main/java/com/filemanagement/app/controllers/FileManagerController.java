@@ -37,6 +37,10 @@ public class FileManagerController {
     public FileManagerController(ServletContext servletContext) {
         this.servletContext = servletContext;
     }
+    @GetMapping("/login")
+    public String login(){
+        return "login";
+    }
 
     @GetMapping("/download/dir/")
     @ResponseBody

@@ -40,6 +40,9 @@
             <button data-toggle="modal" data-target="#createFile" class="btn btn-info" ><i class="fas fa-file-medical"></i></button>
             <a th:href="@{${deletePath}}"  class="btn btn-danger" ><i class="fas fa-trash"></i></a>
             <a th:href="@{/}"  class="btn btn-primary" style="float: right" ><i class="fas fa-home"></i></a>
+            <form th:action="@{/logout}" th:method="post">
+            <button  class="btn btn-outline-secondary" style="float: right" ><i class="fas fa-sign-out-alt"></i></button>
+            </form>
 
         </div>
     </div>
