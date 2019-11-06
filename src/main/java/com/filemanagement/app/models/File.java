@@ -19,6 +19,17 @@ public class File {
     private boolean archived;
     private String unzipPath;
 
+    private String downloadPath;
+
+    public String getDownloadPath() {
+        return downloadPath;
+    }
+
+    public File setDownloadPath(String downloadPath) {
+        this.downloadPath = downloadPath;
+        return this;
+    }
+
     public String getModifiedAt() {
         return modifiedAt;
     }

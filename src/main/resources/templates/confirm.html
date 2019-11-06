@@ -7,14 +7,20 @@
           integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
 <body class="container">
-<h1 style="text-align: center">
-    Are you sure you wanna continue this action
-</h1>
-<div  class="row">
-    <div class="col-6"><a th:href="@{${previous}}" class="btn btn-success">Cancel</a></div>
-    <div class="col-6"><a style="float: right" th:href="@{${next}}" class="btn btn-danger">Confirm</a></div>
+<div class="row justify-content-md-center" style="margin-top: 200px">
+    <div class="card col-6 ">
+        <div class="card-body">
+            <h5 class="card-title" style="text-align: center">
+                <th:block th:text="${file}"></th:block>
+            </h5>
+            <p class="card-text" style="text-align: center">Are you sure you wanna delete <strong class="text-danger">
+                <th:block th:text="${file}"></th:block>
+            </strong>?.
+            </p>
+            <a class="card-link btn btn-info" th:href="@{${previous}}">Cancel</a>
+            <a class="card-link btn btn-danger" style="float:right;;" th:href="@{${next}}">Ok</a>
+        </div>
+    </div>
 </div>
-
-
 </body>
 </html>

@@ -10,6 +10,17 @@ public class Directory {
     private String deletePath;
     private String renamePath;
     private String zipPath;
+
+    private String downloadPath;
+
+    public String getDownloadPath() {
+        return downloadPath;
+    }
+
+    public Directory setDownloadPath(String downloadPath) {
+        this.downloadPath = downloadPath;
+        return this;
+    }
     private String name;
 
     public String getModifiedAt() {

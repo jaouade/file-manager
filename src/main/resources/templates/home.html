@@ -6,17 +6,26 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
 <body class="container">
-<form  th:object="${directory}" th:action="@{/directory}" method="post" >
-
-    <div  class="form-group">
-        <label for="path">Root dir</label>
-        <input th:field="*{path}" type="text" class="form-control col-5" name="path" id="path" aria-describedby="root" placeholder="Enter root dir">
-        <small th:if="${error != null}" id="root" class="form-text text-muted">
-            <span class="text-danger"><th:block th:text="${error}"/></span>
-        </small>
+<div class="row justify-content-md-center" style="margin-top: 200px">
+    <div class="card col-8 ">
+        <div class="card-body">
+            <form method="post" th:action="@{/directory}" th:object="${directory}">
+                <div class="form-group" style="text-align: center">
+                    <div class="input-group mb-3">
+                        <input aria-describedby="basic-addon2" aria-label="Recipient's username" class="form-control"
+                               id="path" name="path" placeholder="Root dir" th:field="*{path}" type="text">
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-success" type="submit">Browse</button>
+                        </div>
+                    </div>
+                    <small class="form-text text-muted" id="root" th:if="${error != null}">
+                        <span class="text-danger"><th:block th:text="${error}"/></span>
+                    </small>
+                </div>
+            </form>
+        </div>
     </div>
-    <button type="submit" class="btn btn-success">Browse</button>
+</div>
 
-</form>
 </body>
 </html>
