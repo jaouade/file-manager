@@ -1,15 +1,11 @@
 package com.filemanagement.app.controllers;
 
 import com.filemanagement.app.models.Directory;
-import com.filemanagement.app.utils.DateUtils;
 import com.filemanagement.app.utils.ErrorHandler;
-import com.filemanagement.app.utils.MediaTypeUtils;
 import com.filemanagement.app.utils.ZipUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,14 +21,13 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.List;
 
 import static com.filemanagement.app.utils.Constants.SLASH;
 import static com.filemanagement.app.utils.Constants.ZIP;
-import static java.net.URLEncoder.encode;
+import static com.filemanagement.app.utils.FileUtils.*;
+import static com.filemanagement.app.utils.PathUtils.decodePath;
+import static com.filemanagement.app.utils.PathUtils.encodePath;
 
 @Controller
 
@@ -45,32 +40,23 @@ public class FileManagerController {
 
     @GetMapping("/download/dir/")
     @ResponseBody
-    public ResponseEntity<ByteArrayResource> downloadFile(@RequestParam String path) throws IOException {
+    public ResponseEntity<ByteArrayResource> download(@RequestParam String path) throws IOException {
 
         File file = new File(decodePath(path));
 
         File zipFile = new File(FilenameUtils.getBaseName(file.getName()) + ZIP);
         zipFile.createNewFile();
         ZipUtils.compressDirectory(file, zipFile);
-        return downloadFile(zipFile);
+        return downloadFile(zipFile, servletContext);
     }
 
-    private ResponseEntity<ByteArrayResource> downloadFile(File fileToBeDownloaded) throws IOException {
-        byte[] data = Files.readAllBytes(fileToBeDownloaded.toPath());
-        ByteArrayResource resource = new ByteArrayResource(data);
-        MediaType mediaType = MediaTypeUtils.getMediaTypeForFileName(this.servletContext, fileToBeDownloaded.getName());
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + fileToBeDownloaded.getName())
-                .contentType(mediaType)
-                .contentLength(data.length)
-                .body(resource);
-    }
+
 
     @GetMapping("/download/file/")
     @ResponseBody
     public ResponseEntity<ByteArrayResource> downloadDir(@RequestParam String path) throws IOException {
         File toDownload = new File(decodePath(path));
-        return downloadFile(toDownload);
+        return downloadFile(toDownload, servletContext);
     }
 
     @PostMapping("edit/file/")
@@ -90,20 +76,16 @@ public class FileManagerController {
     }
     @GetMapping("unzip/file/")
     public String unzip(@RequestParam String path) throws IOException {
-        String decodedPath = decodePath(path);
-        File file = new File(decodedPath);
+        File file = new File(decodePath(path));
         ZipUtils.extractArchive(new File(file.getParent()+SLASH+FilenameUtils.getBaseName(file.getName())),file);
         return "redirect:/open/dir/?path=" + URLEncoder.encode(URLDecoder.decode(file.getParent(), StandardCharsets.UTF_8.toString()), StandardCharsets.UTF_8.toString());
     }
 
-    private String decodePath(@RequestParam String path) throws UnsupportedEncodingException {
-        return URLDecoder.decode(path, StandardCharsets.UTF_8.toString());
-    }
+
 
     @GetMapping("zip/dir/")
     public String zip(@RequestParam String path) throws IOException {
-        String decodedPath = decodePath(path);
-        File file = new File(decodedPath);
+        File file = new File(decodePath(path));
         ZipUtils.compressDirectory(file, new File(file.getParent() + SLASH + FilenameUtils.getBaseName(file.getName()) + ZIP));
         return "redirect:/open/dir/?path=" + URLEncoder.encode(URLDecoder.decode(file.getParent(), StandardCharsets.UTF_8.toString()), StandardCharsets.UTF_8.toString());
     }
@@ -229,10 +211,6 @@ public class FileManagerController {
 
     }
 
-    public static String makeUrl(HttpServletRequest request) {
-        return request.getRequestURL().toString() + "?" + request.getQueryString();
-    }
-
     @GetMapping("/confirmed/delete/dir/")
     public String delete(RedirectAttributes redirectAttributes, @RequestParam String path) {
 
@@ -287,50 +265,15 @@ public class FileManagerController {
             if (directory.exists()) {
 
                 if (directory.isDirectory()) {
-
-                    Function<File, Directory> fileDirectoryMapper = file -> {
-                        try {
-                            return new Directory("/zip/dir/?path="+ encodePath(file)
-                                    ,"/rename/dir/?path=" + encodePath(file)
-                                    , "/open/dir/?path=" + encodePath(file)
-                                    , "/delete/dir/?path=" + encodePath(file)
-                                    , file.getName()
-                            ).setModifiedAt(DateUtils.getFormattedDate(file.lastModified()))
-                                    .setDownloadPath("/download/dir/?path=" + encodePath(file));
-                        } catch (UnsupportedEncodingException e) {
-                            e.printStackTrace();
-                        }
-                        return null;
-                    };
-                    Function<File, com.filemanagement.app.models.File> fileFileMapper = file -> {
-                        try {
-                            return new com.filemanagement.app.models.File(
-                                    FilenameUtils.getExtension(file.getName()).equals("zip"),
-                                    "/unzip/file/?path=" + encodePath(file),
-                                    "/edit/file/?path=" + encodePath(file),file.getName(),
-                                    "/open/dir/?path=" + encodePath(file),
-                                    "/delete/dir/?path=" + encodePath(file),
-                                    "/rename/file/?path=" + encodePath(file))
-                                    .setModifiedAt(DateUtils.getFormattedDate(file.lastModified()))
-                                    .setDownloadPath("/download/file/?path=" + encodePath(file));
-                        } catch (UnsupportedEncodingException e) {
-                            e.printStackTrace();
-                        }
-                        return null;
-                    };
-                    List<Directory> directories = Arrays.stream(Objects.requireNonNull(directory.listFiles()))
-                            .filter(File::isDirectory)
-                            .map(fileDirectoryMapper).collect(Collectors.toList());
-                    List<com.filemanagement.app.models.File> files = Arrays.stream(Objects.requireNonNull(directory.listFiles()))
-                            .filter(File::isFile)
-                            .map(fileFileMapper).collect(Collectors.toList());
+                    List<Directory> directories = foldersOf(directory);
+                    List<com.filemanagement.app.models.File> files = filesOf(directory);
                     model.addAttribute("dirs", directories.size() > 0 ? directories : null);
                     model.addAttribute("files", files.size() > 0 ? files : null);
                     model.addAttribute("deletePath", "/delete/dir/?path=" + encodePath(directory));
                     model.addAttribute("uploadPath", "/upload/file/?path=" + encodePath(directory));
                     model.addAttribute("createPath", "/create/dir/?path=" + encodePath(directory));
                     model.addAttribute("createFilePath", "/create/file/?path=" + encodePath(directory));
-                    model.addAttribute("breadcrumb", breadCrumbThis(directory));
+                    model.addAttribute("breadcrumb", directoryAsBreadCrumb(directory, ""));
                     return "dir";
 
                 } else {
@@ -347,22 +290,5 @@ public class FileManagerController {
 
     }
 
-    private String encodePath(File file) throws UnsupportedEncodingException {
-        return encode(file.getAbsolutePath(), StandardCharsets.UTF_8.toString());
-    }
 
-    private List<Directory> breadCrumbThis(File directory) throws UnsupportedEncodingException {
-        File currentDir = directory;
-        List<Directory> breadCrumb = new ArrayList<>();
-
-        while (currentDir != null) {
-            breadCrumb.add(new Directory("/zip/dir/?path="+ encodePath(currentDir),"", "/open/dir/?path=" + encodePath(currentDir)
-                    , "/delete/dir/?path=" + encodePath(currentDir)
-                    , currentDir.getName().isEmpty() ? "root" : currentDir.getName())
-                    .setModifiedAt(DateUtils.getFormattedDate(currentDir.lastModified())).setDownloadPath("/download/dir/?path=" + encodePath(currentDir)));
-            currentDir = currentDir.getParentFile();
-        }
-        Collections.reverse(breadCrumb);
-        return breadCrumb;
-    }
 }
