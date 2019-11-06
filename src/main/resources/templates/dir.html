@@ -38,7 +38,8 @@
             <button data-toggle="modal" data-target="#exampleModal" class="btn btn-success" ><i class="fas fa-file-upload"></i></button>
             <button data-toggle="modal" data-target="#createModal" class="btn btn-warning" ><i class="fas fa-folder-plus"></i></button>
             <button data-toggle="modal" data-target="#createFile" class="btn btn-info" ><i class="fas fa-file-medical"></i></button>
-            <a th:href="@{${deletePath}}"  class="btn btn-danger" style="float: right"><i class="fas fa-trash"></i></a>
+            <a th:href="@{${deletePath}}"  class="btn btn-danger" ><i class="fas fa-trash"></i></a>
+            <a th:href="@{/}"  class="btn btn-primary" style="float: right" ><i class="fas fa-home"></i></a>
 
         </div>
     </div>
@@ -65,7 +66,7 @@
                 <div class="input-group mb-3 ">
                     <input type="text" class="form-control" th:value="${dir.name}"  name="name" placeholder="new name">
                     <div class="input-group-append">
-                        <button class="btn btn-outline-secondary" type="submit" >Save</button>
+                        <button class="btn btn-outline-secondary" type="submit" >Change Name</button>
                     </div>
                 </div>
             </form>
@@ -92,7 +93,7 @@
             <div class="input-group mb-3">
                 <input type="text" class="form-control" th:value="${file.name}"  name="name" placeholder="new name">
                 <div class="input-group-append">
-                    <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Save</button>
+                    <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Change Name</button>
                 </div>
             </div>
             </form>

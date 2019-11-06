@@ -35,17 +35,19 @@ import static java.net.URLEncoder.encode;
 public class FileManagerController {
 
     @PostMapping("edit/file/")
-    public String saveEdit(@ModelAttribute com.filemanagement.app.models.File file, @RequestParam String path) throws UnsupportedEncodingException {
+    public String saveEdit(RedirectAttributes redirectAttributes,@ModelAttribute com.filemanagement.app.models.File file, @RequestParam String path) throws UnsupportedEncodingException {
         File fileToSave = new File(URLDecoder.decode(path, StandardCharsets.UTF_8.toString()));
 
         try {
             FileUtils.writeStringToFile(
                     fileToSave,
                     file.getContent(),false);
+            redirectAttributes.addFlashAttribute("success","File saved.");
         } catch (IOException e) {
             e.printStackTrace();
+            redirectAttributes.addFlashAttribute("error","File not saved.");
         }
-        return "redirect:/open/dir/?path=" + URLEncoder.encode(URLDecoder.decode(fileToSave.getParent(), StandardCharsets.UTF_8.toString()), StandardCharsets.UTF_8.toString());
+        return "redirect:/edit/file/?path=" + URLEncoder.encode(URLDecoder.decode(path, StandardCharsets.UTF_8.toString()), StandardCharsets.UTF_8.toString());
     }
     @GetMapping("unzip/file/")
     public String unzip(@RequestParam String path) throws IOException {
@@ -144,12 +146,14 @@ public class FileManagerController {
         String decodedPath;
         decodedPath = URLDecoder.decode(path, StandardCharsets.UTF_8.toString());
         File file = new File(decodedPath);
+
         if (name == null || name.isEmpty()) {
+
             redirectAttributes.addFlashAttribute("error", "invalid file name : " + name);
             return "redirect:/open/dir/?path=" + URLEncoder.encode(file.getParent(), StandardCharsets.UTF_8.toString());
 
         }
-
+        if (name.equals(file.getName())) return "redirect:/open/dir/?path=" + URLEncoder.encode(file.getParent(), StandardCharsets.UTF_8.toString());
         try {
             FileUtils.moveFile(
                     FileUtils.getFile(decodedPath),
@@ -171,6 +175,9 @@ public class FileManagerController {
             return "redirect:/open/dir/?path=" + URLEncoder.encode(file.getParent(), StandardCharsets.UTF_8.toString());
 
         }
+        if (name.equals(file.getName()))
+            return "redirect:/open/dir/?path=" + URLEncoder.encode(file.getParent(), StandardCharsets.UTF_8.toString());
+
 
         try {
             FileUtils.moveDirectory(

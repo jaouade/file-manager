@@ -25,6 +25,12 @@
         <form th:object="${file}"  th:action="@{${savePath}}" method="post">
             <h1 style="text-align: center">Editing File  : <th:block th:text="${name}"></th:block></h1>
             <div class="form-group">
+                <div th:if="${error != null}" id="root" class="alert alert-danger">
+                    <th:block th:text="${error}"/>
+                </div>
+                <div th:if="${success != null}" id="noot" class="alert alert-success">
+                    <th:block th:text="${success}"/>
+                </div>
                 <label for="exampleInputEmail1">File Content</label>
                 <textarea  th:field="*{content}" name="content" style="min-height: 500px" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" >
                 </textarea>
