@@ -275,12 +275,12 @@ public class MysqlExportService {
         return sql.toString();
     }
 
-    public void export() throws IOException, SQLException, ClassNotFoundException, InvalidDBURL, InvalidDBConnectionParams, InvalidEmailParams {
+    public void export() throws IOException, SQLException, ClassNotFoundException, InvalidDBURLException, InvalidDBConnectionParamsException, InvalidEmailParamsException {
 
         roport = new StringBuilder();
         //check if properties is set or not
         if (!validateProperties()) {
-            throw new InvalidDBConnectionParams("Invalid config properties: The config properties is missing important parameters: DB_NAME, DB_USERNAME and DB_PASSWORD");
+            throw new InvalidDBConnectionParamsException("Invalid config properties: The config properties is missing important parameters: DB_NAME, DB_USERNAME and DB_PASSWORD");
         }
 
         //connect to the database
@@ -289,7 +289,7 @@ public class MysqlExportService {
             databaseCleanName = database.substring(database.lastIndexOf(SLASH) + 1, database.lastIndexOf(INTERROGATION_POINT));
         else if (!database.contains(INTERROGATION_POINT))
             databaseCleanName = database.substring(database.lastIndexOf(SLASH) + 1);
-        else throw new InvalidDBURL("Invalid db url : " + database);
+        else throw new InvalidDBURLException("Invalid db url : " + database);
 
         String jdbcURL = properties.getProperty(JDBC_CONNECTION_STRING, "");
         String driverName = properties.getProperty(JDBC_DRIVER_NAME, "");
@@ -343,7 +343,7 @@ public class MysqlExportService {
 
     }
 
-    private void send() throws InvalidEmailParams {
+    private void send() throws InvalidEmailParamsException {
         if (isEmailPropertiesValid()) {
             String messages = properties.getProperty(EMAIL_MESSAGE, "Please find attached database backup of " + databaseCleanName);
             EmailService emailService = EmailService.builder()
@@ -370,7 +370,7 @@ public class MysqlExportService {
                 addReportLine(" Unable to send zipped file as attachment to email. See log debug for more info");
             }
         }else {
-            throw new InvalidEmailParams("the mailing properties are not valid.");
+            throw new InvalidEmailParamsException("the mailing properties are not valid.");
         }
     }
 

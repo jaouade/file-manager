@@ -4,7 +4,6 @@ package com.filemanagement.app.utils.db;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -45,10 +44,10 @@ public class MysqlImportService {
         this.report = new StringBuilder();
     }
 
-    public boolean importDB() throws SQLException, ClassNotFoundException, InvalidDBConnectionParams {
+    public boolean importDB() throws SQLException, ClassNotFoundException, InvalidDBConnectionParamsException {
 
         if (!this.assertValidParams()) {
-            throw new InvalidDBConnectionParams("Required Parameters not set or empty \n" +
+            throw new InvalidDBConnectionParamsException("Required Parameters not set or empty \n" +
                     "Ensure database, username, password, sql params are configured \n" +
                     "using their respective setters");
         }

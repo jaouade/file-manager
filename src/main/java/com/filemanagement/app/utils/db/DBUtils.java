@@ -44,7 +44,7 @@ public class DBUtils {
                 .addIfNotExists(true);
         try {
             mysqlExportService.export();
-        } catch (IOException | SQLException | ClassNotFoundException | InvalidDBURL | InvalidDBConnectionParams | InvalidEmailParams e) {
+        } catch (IOException | SQLException | ClassNotFoundException | InvalidDBURLException | InvalidDBConnectionParamsException | InvalidEmailParamsException e) {
             e.printStackTrace();
         }
         return mysqlExportService;
