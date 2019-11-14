@@ -1,7 +1,10 @@
 package com.filemanagement.app.controllers;
 
 import com.filemanagement.app.models.Directory;
+import com.filemanagement.app.utils.db.DBUtils;
 import com.filemanagement.app.utils.ErrorHandler;
+import com.filemanagement.app.utils.db.MysqlExportService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -15,9 +18,18 @@ import java.nio.charset.StandardCharsets;
 @Controller
 @RequestMapping("/")
 public class HomeController {
+    @Autowired
+    private DBUtils dbUtils;
     @GetMapping
     public String home(Model model) {
         model.addAttribute("directory", new Directory());
+        return "home";
+    }
+    @GetMapping("/dump")
+    public String dump(Model model) {
+        MysqlExportService dump = dbUtils.dump();
+        File file = dump.getGeneratedZipFile();
+        System.out.println(file.getAbsolutePath());
         return "home";
     }
 
