@@ -20,10 +20,11 @@ import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
+
 import static com.filemanagement.app.utils.db.Constants.*;
 
 /**
- * Created by seun_ on 24-Feb-18.
+ * @author Jaouad El Aoud
  */
 @Component
 @Data
@@ -41,7 +42,7 @@ public class MysqlExportService {
     private String sqlFileName = "";
     private String zipFileName = "";
     private boolean sendViaEmail;
-    private StringBuilder roport;
+    private StringBuilder report;
     private Properties properties;
     private File generatedZipFile;
 
@@ -50,7 +51,7 @@ public class MysqlExportService {
     @Autowired
     private MysqlBaseService mysqlBaseService;
 
-    public MysqlExportService setEmailProperties(String host, String port, String username, String password, String from, String to,String msg) {
+    public MysqlExportService setEmailProperties(String host, String port, String username, String password, String from, String to, String msg) {
         if (this.properties == null) this.properties = new Properties();
         this.properties.setProperty(EMAIL_HOST, host);
         this.properties.setProperty(EMAIL_PORT, port);
@@ -66,6 +67,10 @@ public class MysqlExportService {
         if (this.properties == null) this.properties = new Properties();
         this.properties.setProperty(TEMP_DIR, directory.getAbsolutePath());
         return this;
+    }
+
+    public String report() {
+        return this.report.toString();
     }
 
     public MysqlExportService sendViaEmail(boolean sendViaEmail) {
@@ -281,7 +286,7 @@ public class MysqlExportService {
 
     public void export() throws IOException, SQLException, ClassNotFoundException, FileManagementException {
 
-        roport = new StringBuilder();
+        report = new StringBuilder();
         //check if properties is set or not
         if (!validateProperties()) {
             throw new InvalidDBConnectionParamsException("Invalid config properties: The config properties is missing important parameters: DB_NAME, DB_USERNAME and DB_PASSWORD");
@@ -305,7 +310,7 @@ public class MysqlExportService {
                     database, driverName);
         } else {
             database = jdbcURL.substring(jdbcURL.lastIndexOf(SLASH) + 1);
-            this.roport.append("database name extracted from connection string: " + database).append(NEW_LINE);
+            this.report.append("database name extracted from connection string: " + database).append(NEW_LINE);
             connection = mysqlBaseService.connectWithURL(properties.getProperty(DB_USERNAME), properties.getProperty(DB_PASSWORD),
                     jdbcURL, driverName);
         }
@@ -357,29 +362,28 @@ public class MysqlExportService {
                     .setFromAddress(properties.getProperty(EMAIL_FROM))
                     .setUsername(properties.getProperty(EMAIL_USERNAME))
                     .setPassword(properties.getProperty(EMAIL_PASSWORD))
-                    .setSubject(properties.getProperty(EMAIL_SUBJECT, sqlFileName.replace(SQL, "")))
-                    ;
-            if (withFileAttached){
+                    .setSubject(properties.getProperty(EMAIL_SUBJECT, sqlFileName.replace(SQL, "")));
+            if (withFileAttached) {
                 emailService.setMessage(messages)
-                .setAttachments(new File[]{new File(zipFileName)});
-            }else {
-                emailService.setMessage(messages+NEW_LINE+"Backup path : " +new File(zipFileName).getAbsolutePath());
+                        .setAttachments(new File[]{new File(zipFileName)});
+            } else {
+                emailService.setMessage(messages + NEW_LINE + "Backup path : " + new File(zipFileName).getAbsolutePath());
             }
             boolean sent = emailService
                     .sendMail(withFileAttached);
 
             if (sent) {
-                addReportLine("Backup file was sent to "+ properties.getProperty(EMAIL_TO)+ " successfully.");
+                addReportLine("Backup file was sent to " + properties.getProperty(EMAIL_TO) + " successfully.");
             } else {
                 addReportLine(" Unable to send zipped file as attachment to email. See log debug for more info");
             }
-        }else {
+        } else {
             throw new InvalidEmailParamsException("the mailing properties are not valid.");
         }
     }
 
     private void addReportLine(String msg) {
-        this.roport.append(LOG_PREFIX +msg).append(NEW_LINE);
+        this.report.append(LOG_PREFIX + msg).append(NEW_LINE);
     }
 
     public void clearTempFiles(boolean preserveZipFile) {
@@ -390,7 +394,7 @@ public class MysqlExportService {
             boolean res = sqlFile.delete();
             addReportLine(" " + sqlFile.getAbsolutePath() + " deleted successfully? " + (res ? " TRUE " : " FALSE "));
         } else {
-            addReportLine(sqlFile.getAbsolutePath()+ " DOES NOT EXIST while clearing Temp Files");
+            addReportLine(sqlFile.getAbsolutePath() + " DOES NOT EXIST while clearing Temp Files");
         }
 
         File sqlFolder = new File(dirName + SQL_DIR);
@@ -398,7 +402,7 @@ public class MysqlExportService {
             boolean res = sqlFolder.delete();
             addReportLine(" " + sqlFile.getAbsolutePath() + " deleted successfully? " + (res ? " TRUE " : " FALSE "));
         } else {
-            addReportLine(sqlFolder.getAbsolutePath()+ " DOES NOT EXIST while clearing Temp Files");
+            addReportLine(sqlFolder.getAbsolutePath() + " DOES NOT EXIST while clearing Temp Files");
         }
 
 
@@ -410,7 +414,7 @@ public class MysqlExportService {
                 boolean res = zipFile.delete();
                 addReportLine(" " + sqlFile.getAbsolutePath() + " deleted successfully? " + (res ? " TRUE " : " FALSE "));
             } else {
-                addReportLine(zipFile.getAbsolutePath()+ " DOES NOT EXIST while clearing Temp Files");
+                addReportLine(zipFile.getAbsolutePath() + " DOES NOT EXIST while clearing Temp Files");
             }
 
             //delete the temp folder
@@ -419,7 +423,7 @@ public class MysqlExportService {
                 boolean res = folder.delete();
                 addReportLine(" " + sqlFile.getAbsolutePath() + " deleted successfully? " + (res ? " TRUE " : " FALSE "));
             } else {
-                addReportLine(folder.getAbsolutePath()+ " DOES NOT EXIST while clearing Temp Files");
+                addReportLine(folder.getAbsolutePath() + " DOES NOT EXIST while clearing Temp Files");
             }
         }
 
@@ -427,12 +431,11 @@ public class MysqlExportService {
     }
 
 
-
     public String getSql() {
         return sql;
     }
 
-    public File getGeneratedZipFile() {
+    public File getDumpFile() {
         if (generatedZipFile != null && generatedZipFile.exists()) {
             return generatedZipFile;
         }

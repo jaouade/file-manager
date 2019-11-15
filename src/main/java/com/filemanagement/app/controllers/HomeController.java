@@ -4,6 +4,8 @@ import com.filemanagement.app.models.Directory;
 import com.filemanagement.app.utils.db.DBUtils;
 import com.filemanagement.app.utils.ErrorHandler;
 import com.filemanagement.app.utils.db.MysqlExportService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,8 +20,14 @@ import java.nio.charset.StandardCharsets;
 @Controller
 @RequestMapping("/")
 public class HomeController {
+    private static final Logger LOGGER= LoggerFactory.getLogger(DBUtils.class);
+    private final DBUtils dbUtils;
+
     @Autowired
-    private DBUtils dbUtils;
+    public HomeController(DBUtils dbUtils) {
+        this.dbUtils = dbUtils;
+    }
+
     @GetMapping
     public String home(Model model) {
         model.addAttribute("directory", new Directory());
@@ -28,9 +36,10 @@ public class HomeController {
     @GetMapping("/dump")
     public String dump(Model model) {
         MysqlExportService dump = dbUtils.dump();
-        File file = dump.getGeneratedZipFile();
+        File file = dump.getDumpFile();
         System.out.println(file.getAbsolutePath());
-        return "home";
+        LOGGER.info("dump report : "+dump.report());
+        return "dump";
     }
 
     @PostMapping("/directory")

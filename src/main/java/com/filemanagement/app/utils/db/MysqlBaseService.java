@@ -1,7 +1,5 @@
 package com.filemanagement.app.utils.db;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
@@ -10,12 +8,12 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import static com.filemanagement.app.utils.db.Constants.*;
-import static com.filemanagement.app.utils.Constants.*;
-import static com.filemanagement.app.utils.Constants.SPRING_DATASOURCE_DEFAULT_DRIVER_NAME;
 
+import static com.filemanagement.app.utils.Constants.*;
+import static com.filemanagement.app.utils.db.Constants.SQL_END_PATTERN;
+import static com.filemanagement.app.utils.db.Constants.SQL_START_PATTERN;
 /**
- * Created by seun_ on 01-Mar-18.
+ * @author Jaouad El Aoud
  */
 @Component
 public class MysqlBaseService {

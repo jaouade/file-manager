@@ -1,8 +1,5 @@
 package com.filemanagement.app.utils.db;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
@@ -10,10 +7,8 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import java.io.File;
 import java.util.Properties;
-
 /**
- * Created by seun_ on 25-Feb-18.
- *
+ * @author Jaouad El Aoud
  */
 class EmailService {
 
