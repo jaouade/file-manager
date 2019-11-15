@@ -1,6 +1,7 @@
 package com.filemanagement.app.utils.db;
 
 
+import com.filemanagement.app.exception.InvalidDBConnectionParamsException;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;

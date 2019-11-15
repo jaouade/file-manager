@@ -1,17 +1,19 @@
 package com.filemanagement.app.utils.db;
 
+import com.filemanagement.app.exception.FileManagementException;
+import java.io.File;
+import java.io.IOException;
+import java.sql.SQLException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
-import java.io.IOException;
-import java.sql.SQLException;
-
 @Component
 public class DBUtils {
     private final Environment environment;
-
+    private static final Logger LOGGER= LoggerFactory.getLogger(DBUtils.class);
 
     @Autowired
     private MysqlExportService mysqlExportService;
@@ -44,8 +46,8 @@ public class DBUtils {
                 .addIfNotExists(true);
         try {
             mysqlExportService.export();
-        } catch (IOException | SQLException | ClassNotFoundException | InvalidDBURLException | InvalidDBConnectionParamsException | InvalidEmailParamsException e) {
-            e.printStackTrace();
+        } catch (IOException | SQLException | ClassNotFoundException | FileManagementException e) {
+            LOGGER.error("something wrong during the dump, caused by : ",e);
         }
         return mysqlExportService;
     }

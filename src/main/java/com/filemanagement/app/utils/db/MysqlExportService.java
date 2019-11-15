@@ -1,6 +1,10 @@
 package com.filemanagement.app.utils.db;
 
 
+import com.filemanagement.app.exception.FileManagementException;
+import com.filemanagement.app.exception.InvalidDBConnectionParamsException;
+import com.filemanagement.app.exception.InvalidDBURLException;
+import com.filemanagement.app.exception.InvalidEmailParamsException;
 import lombok.Builder;
 import lombok.Data;
 import org.slf4j.Logger;
@@ -275,7 +279,7 @@ public class MysqlExportService {
         return sql.toString();
     }
 
-    public void export() throws IOException, SQLException, ClassNotFoundException, InvalidDBURLException, InvalidDBConnectionParamsException, InvalidEmailParamsException {
+    public void export() throws IOException, SQLException, ClassNotFoundException, FileManagementException {
 
         roport = new StringBuilder();
         //check if properties is set or not
