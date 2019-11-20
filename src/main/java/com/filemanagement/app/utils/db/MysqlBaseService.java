@@ -9,9 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static com.filemanagement.app.utils.Constants.*;
-import static com.filemanagement.app.utils.db.Constants.SQL_END_PATTERN;
-import static com.filemanagement.app.utils.db.Constants.SQL_START_PATTERN;
+import static com.filemanagement.app.utils.db.Constants.*;
+
 /**
  * @author Jaouad El Aoud
  */
@@ -19,19 +18,27 @@ import static com.filemanagement.app.utils.db.Constants.SQL_START_PATTERN;
 public class MysqlBaseService {
 
 
-    @Autowired
-    Environment environment;
+    private final Environment environment;
 
-    public Connection connect(String username, String password, String database, String driverName) throws ClassNotFoundException, SQLException {
+    @Autowired
+    public MysqlBaseService(Environment environment) {
+        this.environment = environment;
+    }
+
+    Connection connect(String username, String password, String database, String driverName) throws ClassNotFoundException, SQLException {
         String url = environment.getProperty(SPRING_DATASOURCE_DEFAULT_URL, "jdbc:mysql://localhost:3306/") + database;
         String driver = (Objects.isNull(driverName) || driverName.isEmpty())
                 ? environment.getProperty(SPRING_DATASOURCE_DEFAULT_DRIVER_NAME, "com.mysql.jdbc.Driver") : driverName;
         return doConnect(driver, url, username, password);
     }
 
-    public Connection connectWithURL(String username, String password, String jdbcURL, String driverName) throws ClassNotFoundException, SQLException {
+    Connection connectWithURL(String username, String password, String jdbcURL, String driverName) throws ClassNotFoundException, SQLException {
         String driver = (Objects.isNull(driverName) || driverName.isEmpty()) ? environment.getProperty(SPRING_DATASOURCE_DEFAULT_DRIVER_NAME, "com.mysql.jdbc.Driver") : driverName;
         return doConnect(driver, jdbcURL, username, password);
+    }
+    boolean disconnect(Connection connection) throws SQLException {
+        connection.close();
+        return connection.isClosed();
     }
 
 
@@ -41,7 +48,7 @@ public class MysqlBaseService {
     }
 
 
-    public List<String> getAllTables(String database, Statement stmt) throws SQLException {
+    List<String> tablesFrom(String database, Statement stmt) throws SQLException {
         List<String> table = new ArrayList<>();
         ResultSet rs;
         rs = stmt.executeQuery("SHOW TABLE STATUS FROM `" + database + "`;");
@@ -51,7 +58,7 @@ public class MysqlBaseService {
         return table;
     }
 
-    public String getEmptyTableSQL(String database, String table) {
+    String emptyTableSQL(String database, String table) {
         return "\n" + SQL_START_PATTERN + "\n" +
                 "DELETE FROM `" + database + "`.`" + table + "`;\n" +
                 "\n" + SQL_END_PATTERN + "\n";

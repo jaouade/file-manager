@@ -10,6 +10,7 @@ public class Directory {
     private String deletePath;
     private String renamePath;
     private String zipPath;
+    private String backUpPath;
 
     private String downloadPath;
 

@@ -17,10 +17,57 @@
             integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
             crossorigin="anonymous"></script>
 </head>
-<body class="container">
-<div style="margin-top: 30px">
+<body style=" overflow: auto;" class="container">
+<nav  class="navbar navbar-expand-lg fixed-top navbar-light bg-light">
+    <a class="navbar-brand" th:href="@{/}">FILE MANAGER</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/}" ><i class="fas fa-home"></i> Home</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-success"  style="cursor: pointer" data-toggle="modal" data-target="#exampleModal"><i
+                        class="fas fa-file-upload"></i> Upload File</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-info"  style="cursor: pointer" data-toggle="modal" data-target="#createModal" ><i
+                        class="fas fa-folder-plus"></i> Create Folder</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-primary"  style="cursor: pointer" th:href="@{${backupPath}}" ><i class="fas fa-database"></i> Create Back Up</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-danger" style="cursor: pointer"  th:href="@{${deletePath}}" ><i class="fas fa-trash"></i> Delete this Dir</a>
+            </li>
+            <!--<li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Actions
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <a style="cursor: pointer" class="dropdown-item text-success" data-toggle="modal" data-target="#exampleModal"><i
+                        class="fas fa-file-upload"></i> Upload File</a>
+                    <a style="cursor: pointer" class="dropdown-item text-info" data-toggle="modal" data-target="#createModal" ><i
+                        class="fas fa-folder-plus"></i> Create Folder</a>
+                    <a class="dropdown-item text-primary" th:href="@{${backupPath}}" ><i class="fas fa-database"></i> Create Back Up</a>
+                    <div class="dropdown-divider"></div>
+                    <a  class="dropdown-item text-danger" th:href="@{${deletePath}}" ><i class="fas fa-trash"></i> Delete Dir</a>
+                </div>
+            </li>-->
+
+        </ul>
+        <form class="form-inline my-2 my-lg-0" th:action="@{/logout}" th:method="post">
+            <button class="btn btn-outline-secondary" style="float: right"><i class="fas fa-sign-out-alt"></i>
+            </button>
+        </form>
+    </div>
+</nav>
+<div style="margin-top: 80px">
     <div class="row">
-        <div class="col-9">
+        <div class="col-12">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li th:each="dir , iterStat : ${breadcrumb}" class="breadcrumb-item"
@@ -34,23 +81,34 @@
 
             </nav>
         </div>
-        <div class="col-3">
-            <button data-toggle="modal" data-target="#exampleModal" class="btn btn-success" ><i class="fas fa-file-upload"></i></button>
-            <button data-toggle="modal" data-target="#createModal" class="btn btn-warning" ><i class="fas fa-folder-plus"></i></button>
-            <button data-toggle="modal" data-target="#createFile" class="btn btn-info" ><i class="fas fa-file-medical"></i></button>
-            <a th:href="@{${deletePath}}"  class="btn btn-danger" ><i class="fas fa-trash"></i></a>
-            <a th:href="@{/}"  class="btn btn-primary" style="float: right" ><i class="fas fa-home"></i></a>
+        <!--<div class="col-6">
+            <a about="Back up your db here" th:href="@{${backupPath}}" class="btn btn-primary"><i class="fas fa-database"></i></a>
+            <button data-toggle="modal" data-target="#exampleModal" class="btn btn-success"><i
+                    class="fas fa-file-upload"></i></button>
+            <button data-toggle="modal" data-target="#createModal" class="btn btn-warning"><i
+                    class="fas fa-folder-plus"></i></button>
+            <button data-toggle="modal" data-target="#createFile" class="btn btn-info"><i
+                    class="fas fa-file-medical"></i></button>
+            <a th:href="@{${deletePath}}" class="btn btn-danger"><i class="fas fa-trash"></i></a>
+            <a th:href="@{/}" class="btn btn-primary" style="float: right"><i class="fas fa-home"></i></a>
             <form th:action="@{/logout}" th:method="post">
-            <button  class="btn btn-outline-secondary" style="float: right" ><i class="fas fa-sign-out-alt"></i></button>
+                <button class="btn btn-outline-secondary" style="float: right"><i class="fas fa-sign-out-alt"></i>
+                </button>
             </form>
 
-        </div>
+        </div>-->
     </div>
 </div>
 <div th:if="${error != null}" id="root" class="alert alert-danger">
     <th:block th:text="${error}"/>
 </div>
-<table style="margin-top: 50px" class="table table-hover">
+<div th:if="${backupMsg != null}" id="backup-msg" class="alert alert-success">
+    <th:block th:text="${backupMsg}"/>
+</div>
+<div th:if="${zipMsg != null}" id="zip-msg" class="alert alert-success">
+    <th:block th:text="${zipMsg}"/>
+</div>
+<table  style=" overflow: auto;margin-top: 50px" class="table table-hover">
     <thead>
     </thead>
     <tbody>
@@ -67,9 +125,9 @@
         <td>
             <form th:action="@{${dir.renamePath}}" th:method="post">
                 <div class="input-group mb-3 ">
-                    <input type="text" class="form-control" th:value="${dir.name}"  name="name" placeholder="new name">
+                    <input type="text" class="form-control" th:value="${dir.name}" name="name" placeholder="new name">
                     <div class="input-group-append">
-                        <button class="btn btn-outline-secondary" type="submit" >Change Name</button>
+                        <button class="btn btn-outline-secondary" type="submit">Change Name</button>
                     </div>
                 </div>
             </form>
@@ -106,12 +164,12 @@
         </td>
         <td>
             <form th:action="@{${file.renamePath}}" th:method="post">
-            <div class="input-group mb-3">
-                <input type="text" class="form-control" th:value="${file.name}"  name="name" placeholder="new name">
-                <div class="input-group-append">
-                    <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Change Name</button>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" th:value="${file.name}" name="name" placeholder="new name">
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Change Name</button>
+                    </div>
                 </div>
-            </div>
             </form>
 
         </td>
@@ -172,7 +230,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form th:action="@{${createPath}}" method="post" >
+            <form th:action="@{${createPath}}" method="post">
                 <div class="modal-body">
                     <input class="form-control" name="dirName" type="text" placeholder="Dir to be created"/>
                 </div>
@@ -184,7 +242,8 @@
 
         </div>
     </div>
-</div><div class="modal fade" id="createFile" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+</div>
+<div class="modal fade" id="createFile" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
      aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -194,7 +253,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form th:action="@{${createFilePath}}" method="post" >
+            <form th:action="@{${createFilePath}}" method="post">
                 <div class="modal-body">
                     <input class="form-control" name="fileName" type="text" placeholder="File to be created"/>
                 </div>

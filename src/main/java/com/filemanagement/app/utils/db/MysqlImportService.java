@@ -2,7 +2,6 @@ package com.filemanagement.app.utils.db;
 
 
 import com.filemanagement.app.exception.InvalidDBConnectionParamsException;
-import lombok.Builder;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -12,14 +11,15 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import static com.filemanagement.app.utils.db.Constants.*;
+
+import static com.filemanagement.app.utils.db.Constants.SQL_END_PATTERN;
+import static com.filemanagement.app.utils.db.Constants.SQL_START_PATTERN;
 /**
  * @author Jaouad El Aoud
  */
 @Data
-@Builder
 public class MysqlImportService {
-    private final MysqlBaseService mysqlBaseService;
+    private MysqlBaseService mysqlBaseService;
     private String database;
     private String username;
     private String password;
@@ -69,7 +69,7 @@ public class MysqlImportService {
 
 
         if (deleteExisting || dropExisting) {
-            tables = mysqlBaseService.getAllTables(database, stmt);
+            tables = mysqlBaseService.tablesFrom(database, stmt);
             for (String table : tables) {
                 if (deleteExisting && !dropExisting) clearTable(table);
                 if (dropExisting) dropTable(table);

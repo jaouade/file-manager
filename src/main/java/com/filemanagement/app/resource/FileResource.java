@@ -41,7 +41,7 @@ public class FileResource {
                 return ResponseEntity.ok().body(ListDir.builder().current(new Directory("/api/zip/dir/?path=" + encodePath(directory)
                         , "/api/rename/dir/?path=" + encodePath(directory)
                         , "/api/open/dir/?path=" + encodePath(directory)
-                        , "/api/delete/dir/?path=" + encodePath(directory)
+                        , "/api/delete/?path=" + encodePath(directory)
                         , directory.getName()
                 ).setModifiedAt(DateUtils.getFormattedDate(directory.lastModified()))
                         .setDownloadPath("/api/download/dir/?path=" + encodePath(directory))).files(filesOf(directory, "/api")).directories(foldersOf(directory, "/api")).build());
@@ -71,7 +71,7 @@ public class FileResource {
         }
     }
 
-    @GetMapping("delete/dir/")
+    @GetMapping("delete/")
     public ResponseEntity delete(@RequestParam String path) throws IOException {
 
         File directory = new File(decodePath(path));

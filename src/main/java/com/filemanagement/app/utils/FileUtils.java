@@ -29,7 +29,7 @@ public class FileUtils {
                         api + "/unzip/file/?path=" + encodePath(file),
                         api + "/edit/file/?path=" + encodePath(file), file.getName(),
                         api + "/open/dir/?path=" + encodePath(file),
-                        api + "/delete/dir/?path=" + encodePath(file),
+                        api + "/delete/?path=" + encodePath(file),
                         api + "/rename/file/?path=" + encodePath(file))
                         .setModifiedAt(DateUtils.getFormattedDate(file.lastModified()))
                         .setDownloadPath(api + "/download/file/?path=" + encodePath(file));
@@ -51,7 +51,7 @@ public class FileUtils {
                 return new Directory(api + "/zip/dir/?path=" + encodePath(file)
                         , api + "/rename/dir/?path=" + encodePath(file)
                         , api + "/open/dir/?path=" + encodePath(file)
-                        , api + "/delete/dir/?path=" + encodePath(file)
+                        , api + "/delete/?path=" + encodePath(file)
                         , file.getName()
                 ).setModifiedAt(DateUtils.getFormattedDate(file.lastModified()))
                         .setDownloadPath(api + "/download/dir/?path=" + encodePath(file));
@@ -71,7 +71,7 @@ public class FileUtils {
         String api = getPrefix(prefix);
         while (currentDir != null) {
             breadCrumb.add(new Directory(api + "/zip/dir/?path=" + encodePath(currentDir), "", api + "/open/dir/?path=" + encodePath(currentDir)
-                    , api + "/delete/dir/?path=" + encodePath(currentDir)
+                    , api + "/delete/?path=" + encodePath(currentDir)
                     , currentDir.getName().isEmpty() ? "root" : currentDir.getName())
                     .setModifiedAt(DateUtils.getFormattedDate(currentDir.lastModified())).setDownloadPath(api + "/download/dir/?path=" + encodePath(currentDir)));
             currentDir = currentDir.getParentFile();

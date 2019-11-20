@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+<body class="container">
+<div class="row justify-content-md-center" style="margin-top: 200px">
+    <div class="card col-8 ">
+        <div class="card-body">
+            <form method="post" th:action="@{${path}}" th:object="${properties}">
+                <small class="form-text text-muted" id="root" th:if="${error != null}">
+                    <span class="text-danger"><th:block th:text="${error}"/></span>
+                </small>
+
+                <div class="form-row">
+                    <div class="form-group col-md-5">
+                        <label for="server">DB URL</label>
+                        <input type="text" name="host" th:field="*{dbUrl}" class="form-control" id="server"
+                               placeholder="DB URL">
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label for="user">User</label>
+                        <input type="text" name="login" th:field="*{dbUser}" class="form-control" id="user"
+                               placeholder="User Name">
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="password">Password</label>
+                        <input type="password" name="password" th:field="*{dbPassword}" class="form-control"
+                               id="password" placeholder="Password">
+                    </div>
+                </div>
+                <div class="form-row">
+
+                    <div style="margin-left: 22px" class="form-group form-check">
+                        <input th:field="*{addIfNotExist}" type="checkbox" class="form-check-input" id="addIfNotExists">
+                        <label class="form-check-label" for="addIfNotExists">Create Tables if does not exist.</label>
+                    </div>
+                </div>
+                <div class="form-row">
+
+                    <div style="margin-left: 22px" class="form-group form-check ">
+                        <input th:field="*{deleteExistingData}" type="checkbox" class="form-check-input" id="deleteTableContents">
+                        <label class="form-check-label" for="deleteTableContents">Delete table contents.</label>
+                    </div>
+                </div>
+                <div class="form-row">
+
+                    <div style="margin-left: 22px" class="form-group form-check ">
+                        <input th:field="*{dropTables}" type="checkbox" class="form-check-input" id="dropTables">
+                        <label class="form-check-label" for="dropTables">Drop Tables</label>
+                    </div>
+                </div>
+                <div class="form-row">
+
+                    <div style="margin-left: 22px" class="form-group form-check">
+                        <input th:field="*{sendViaEmail}" type="checkbox" class="form-check-input" id="sendViaEmail">
+                        <label class="form-check-label" for="sendViaEmail">Send By Email</label>
+                    </div>
+                </div>
+
+
+                <button type="submit" style="float:right;" class="btn btn-warning">Launch Back Up</button>
+                <small class="form-text text-muted">
+                    <span class="text-warning">If you wanna use default connection properties for db leave "DB URL","USER" and "PASSWORD" empty.</span>
+                </small>
+            </form>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

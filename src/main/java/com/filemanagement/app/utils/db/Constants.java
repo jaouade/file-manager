@@ -29,4 +29,10 @@ public interface Constants {
     String LOG_PREFIX = "java-mysql-exporter";
     String SQL_START_PATTERN = "-- start";
     String SQL_END_PATTERN = "-- end";
+    String SPRING_DATASOURCE_DEFAULT_DRIVER_NAME = "spring.datasource.default-driver-name";
+    String SPRING_DATASOURCE_DEFAULT_URL = "spring.datasource.default-url";
+    String COLUMN_LABEL_NAME = "Name";
+    String UNDERSCORE = "_";
+    String DATE_FORMAT = "d_M_Y_H_mm_ss";
+    String EMAIL_NEW_LINE = "<br/>";
 }
