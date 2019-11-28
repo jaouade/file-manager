@@ -39,8 +39,7 @@ public class FileUtils {
             return null;
         };
 
-        return Arrays.stream(Objects.requireNonNull(directory.listFiles()))
-                .filter(java.io.File::isFile)
+        return Arrays.stream(Objects.requireNonNull(directory.listFiles(java.io.File::isFile)))
                 .map(fileFileMapper).collect(Collectors.toList());
     }
 
@@ -60,8 +59,7 @@ public class FileUtils {
             }
             return null;
         };
-        return Arrays.stream(Objects.requireNonNull(directory.listFiles()))
-                .filter(java.io.File::isDirectory)
+        return Arrays.stream(Objects.requireNonNull(directory.listFiles(java.io.File::isDirectory)))
                 .map(fileDirectoryMapper).collect(Collectors.toList());
     }
 
